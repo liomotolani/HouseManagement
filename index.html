@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HavenHub | Complete Home & Household Management System</title>
+  <meta name="description" content="HavenHub is an all-in-one home management platform to coordinate household chores, split expenses and utility bills, manage pantry stock, track maintenance, and organize emergency contacts." />
+  <meta name="keywords" content="home management, household organizer, chore tracker, roommate expense split, pantry inventory, appliance maintenance" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/modules.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Backdrop for Mobile Navigation -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- App Sidebar -->
+    <aside id="app-sidebar" class="sidebar" aria-label="Sidebar Navigation">
+      <div class="brand-section">
+        <a href="#" class="brand-logo" id="brand-home-link" onclick="window.switchTab('dashboard')">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          <div class="brand-info">
+            <h1>HavenHub</h1>
+            <p>Household OS</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <div class="nav-section-title">Home Core</div>
+
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard" id="nav-dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="#chores" class="nav-item" data-tab="chores" id="nav-chores">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          <span>Chores & Tasks</span>
+        </a>
+
+        <a href="#expenses" class="nav-item" data-tab="expenses" id="nav-expenses">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          <span>Bills & Expenses</span>
+        </a>
+
+        <a href="#pantry" class="nav-item" data-tab="pantry" id="nav-pantry">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span>Pantry & Groceries</span>
+        </a>
+
+        <a href="#maintenance" class="nav-item" data-tab="maintenance" id="nav-maintenance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+          <span>Maintenance Log</span>
+        </a>
+
+        <div class="nav-section-title" style="margin-top: 10px;">Community</div>
+
+        <a href="#household" class="nav-item" data-tab="household" id="nav-household">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Residents & Board</span>
+        </a>
+
+        <a href="#settings" class="nav-item" data-tab="settings" id="nav-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>Backup & Data</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="household-status-card" id="sidebar-household-summary">
+          <div style="flex: 1;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">Oakwood Haven</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">3 Active Residents</div>
+          </div>
+          <div class="resident-avatar-stack" id="sidebar-avatar-stack">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Application Wrapper -->
+    <div class="main-wrapper">
+      <!-- Sticky Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button id="mobile-menu-btn" class="mobile-menu-toggle" aria-label="Open Navigation Menu">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div class="header-title-group">
+            <h2 id="header-page-title">Dashboard Overview</h2>
+            <div id="header-current-date" class="current-date">Loading date...</div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Global Live Search -->
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="global-search-input" placeholder="Search tasks, bills..." aria-label="Global search" />
+          </div>
+
+          <!-- Quick Add Button -->
+          <button class="btn btn-primary btn-sm" id="btn-quick-add" onclick="window.openAddChoreModal()" title="Quick Add Chore">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Add Task</span>
+          </button>
+
+          <!-- Theme Toggle Switch -->
+          <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Dark/Light Theme">
+            <!-- Icon rendered via JS -->
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Viewport -->
+      <main class="content-body">
+        
+        <!-- =========================================
+             VIEW 1: DASHBOARD
+        ========================================= -->
+        <section id="tab-view-dashboard" class="tab-view active" aria-labelledby="header-page-title">
+          <!-- Top KPI Stat Cards -->
+          <div class="stats-grid">
+            <div class="stat-card purple" id="card-kpi-chores">
+              <div class="stat-info">
+                <span class="stat-label">Pending Chores</span>
+                <span class="stat-value" id="stat-chores-count">0</span>
+                <span class="stat-meta" id="stat-chores-sub">0 due today</span>
+              </div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              </div>
+            </div>
+
+            <div class="stat-card blue" id="card-kpi-bills">
+              <div class="stat-info">
+                <span class="stat-label">Pending Bills</span>
+                <span class="stat-value" id="stat-bills-amount">$0</span>
+                <span class="stat-meta" id="stat-bills-sub">0 unpaid bills</span>
+              </div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </div>
+            </div>
+
+            <div class="stat-card amber" id="card-kpi-pantry">
+              <div class="stat-info">
+                <span class="stat-label">Low Stock Items</span>
+                <span class="stat-value" id="stat-pantry-count">0</span>
+                <span class="stat-meta" id="stat-pantry-sub">Needs restock</span>
+              </div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+              </div>
+            </div>
+
+            <div class="stat-card emerald" id="card-kpi-maint">
+              <div class="stat-info">
+                <span class="stat-label">Maintenance Alerts</span>
+                <span class="stat-value" id="stat-maint-count">0</span>
+                <span class="stat-meta" id="stat-maint-sub">Due in 14 days</span>
+              </div>
+              <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Tiles -->
+          <div class="quick-actions-bar">
+            <div class="quick-action-card" onclick="window.openAddChoreModal()" id="qa-add-chore">
+              <div class="quick-action-icon" style="background: var(--gradient-brand);">+</div>
+              <div>
+                <h4>New Chore</h4>
+                <span>Assign to roommate</span>
+              </div>
+            </div>
+
+            <div class="quick-action-card" onclick="window.openAddExpenseModal()" id="qa-add-expense">
+              <div class="quick-action-icon" style="background: var(--gradient-accent);">$</div>
+              <div>
+                <h4>Log Bill / Split</h4>
+                <span>Track rent & utilities</span>
+              </div>
+            </div>
+
+            <div class="quick-action-card" onclick="window.openAddPantryModal()" id="qa-add-pantry">
+              <div class="quick-action-icon" style="background: var(--gradient-warm);">🛒</div>
+              <div>
+                <h4>Add Supply</h4>
+                <span>Pantry or groceries</span>
+              </div>
+            </div>
+
+            <div class="quick-action-card" onclick="window.openAddNoteModal()" id="qa-add-note">
+              <div class="quick-action-icon" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">📌</div>
+              <div>
+                <h4>Pin Sticky Note</h4>
+                <span>Post on noticeboard</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard Two-Column Grid -->
+          <div class="dashboard-grid">
+            <!-- Left: Today's Urgent Chores -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Priority Household Tasks
+                  </h3>
+                  <div class="card-subtitle">Immediate chores needing completion today</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.switchTab('chores')">View All →</button>
+              </div>
+              <div id="dashboard-urgent-chores" class="chores-list">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Right: Monthly Spend Chart -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                    Spending Breakdown
+                  </h3>
+                  <div class="card-subtitle">Monthly expense distribution</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.switchTab('expenses')">Manage →</button>
+              </div>
+              <div id="dashboard-chart-container">
+                <!-- SVG Donut Chart rendered dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Recent Household Activity Stream -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  Recent Household Activity
+                </h3>
+                <div class="card-subtitle">Real-time log of chores completed, bills updated, and notes posted</div>
+              </div>
+            </div>
+            <div id="dashboard-activity-feed" class="activity-list">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- =========================================
+             VIEW 2: CHORES & TASKS
+        ========================================= -->
+        <section id="tab-view-chores" class="tab-view">
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Household Chore Management</h3>
+                <div class="card-subtitle">Assign recurring chores, build streaks, and keep the home immaculate</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="text-align: right;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">COMPLETION RATE</span>
+                  <div id="chores-completion-pct" style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: var(--primary);">0%</div>
+                </div>
+                <button class="btn btn-primary" onclick="window.openAddChoreModal()" id="btn-add-chore-tab">
+                  + Add New Chore
+                </button>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="width: 100%; height: 7px; background: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden; margin-bottom: 20px;">
+              <div id="chores-progress-bar" style="height: 100%; width: 0%; background: var(--gradient-brand); transition: width 0.4s ease;"></div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-bar">
+              <div class="filter-pills" id="chores-filter-pills">
+                <button class="filter-pill active" onclick="window.filterChores('all', this)">All Tasks</button>
+                <button class="filter-pill" onclick="window.filterChores('today', this)">⚡ Due Today</button>
+                <button class="filter-pill" onclick="window.filterChores('pending', this)">Pending</button>
+                <button class="filter-pill" onclick="window.filterChores('urgent', this)">Urgent Priority</button>
+                <button class="filter-pill" onclick="window.filterChores('completed', this)">Completed</button>
+              </div>
+            </div>
+
+            <!-- Chores List Container -->
+            <div id="chores-list-container" class="chores-list">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- =========================================
+             VIEW 3: EXPENSES & BILLS
+        ========================================= -->
+        <section id="tab-view-expenses" class="tab-view">
+          <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
+            <div class="stat-card purple">
+              <div class="stat-info">
+                <span class="stat-label">Total Monthly Expenses</span>
+                <span class="stat-value" id="exp-total-amount">$0.00</span>
+                <span class="stat-meta">Rent, Utilities & Household</span>
+              </div>
+            </div>
+            <div class="stat-card emerald">
+              <div class="stat-info">
+                <span class="stat-label">Paid This Month</span>
+                <span class="stat-value" id="exp-paid-amount" style="color: var(--success);">$0.00</span>
+                <span class="stat-meta">Settled transactions</span>
+              </div>
+            </div>
+            <div class="stat-card amber">
+              <div class="stat-info">
+                <span class="stat-label">Pending / Unpaid</span>
+                <span class="stat-value" id="exp-pending-amount" style="color: var(--warning);">$0.00</span>
+                <span class="stat-meta">Upcoming bill due dates</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="expense-breakdown-row">
+            <!-- Left: Table of Bills -->
+            <div class="card expenses-table-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Utility Bills & Expenses</h3>
+                  <div class="card-subtitle">Track rent, high-speed fiber, power, gas, and bulk supplies</div>
+                </div>
+                <button class="btn btn-primary" onclick="window.openAddExpenseModal()" id="btn-add-expense-tab">
+                  + Add Expense / Bill
+                </button>
+              </div>
+
+              <!-- Filter Pills -->
+              <div class="filter-bar">
+                <div class="filter-pills" id="expense-filter-pills">
+                  <button class="filter-pill active" onclick="window.filterExpenses('all', this)">All Categories</button>
+                  <button class="filter-pill" onclick="window.filterExpenses('utilities', this)">Utilities</button>
+                  <button class="filter-pill" onclick="window.filterExpenses('housing', this)">Housing / Rent</button>
+                  <button class="filter-pill" onclick="window.filterExpenses('groceries', this)">Groceries</button>
+                  <button class="filter-pill" onclick="window.filterExpenses('maintenance', this)">Maintenance</button>
+                </div>
+              </div>
+
+              <table class="expenses-table">
+                <thead>
+                  <tr>
+                    <th>Item & Split</th>
+                    <th>Category</th>
+                    <th>Total</th>
+                    <th>Paid By</th>
+                    <th>Due Date</th>
+                    <th>Status / Action</th>
+                  </tr>
+                </thead>
+                <tbody id="expenses-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Right: Fair Split Balances -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Fair-Share Split</h3>
+                  <div class="card-subtitle">Automatic equal distribution calculation</div>
+                </div>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">
+                Net balance showing who is owed money or needs to contribute to the house fund.
+              </p>
+              <div id="expense-splits-list" class="split-members-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- =========================================
+             VIEW 4: PANTRY & GROCERIES
+        ========================================= -->
+        <section id="tab-view-pantry" class="tab-view">
+          <div class="pantry-grid-container">
+            <!-- Left: Inventory Stock -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Pantry & Household Supplies</h3>
+                  <div class="card-subtitle">Real-time inventory levels with automatic low-stock alerts</div>
+                </div>
+                <button class="btn btn-primary" onclick="window.openAddPantryModal()" id="btn-add-pantry-tab">
+                  + Add Item
+                </button>
+              </div>
+
+              <div class="filter-bar">
+                <div class="filter-pills" id="pantry-filter-pills">
+                  <button class="filter-pill active" onclick="window.filterPantry('all', this)">All Supplies</button>
+                  <button class="filter-pill" onclick="window.filterPantry('pantry', this)">🥫 Dry Pantry</button>
+                  <button class="filter-pill" onclick="window.filterPantry('fridge', this)">🧊 Fridge & Fresh</button>
+                  <button class="filter-pill" onclick="window.filterPantry('cleaning', this)">🧼 Cleaning Goods</button>
+                </div>
+              </div>
+
+              <div id="pantry-items-grid" class="pantry-items-grid">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Right: Smart Grocery Shopping List -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">🛒 Smart Grocery List</h3>
+                  <div class="card-subtitle">Auto-synced with low-stock supplies</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.clearBoughtGroceries()">Clear Bought</button>
+              </div>
+
+              <!-- Quick Add Item to Shopping List -->
+              <form onsubmit="window.addQuickGrocery(event)" style="display: flex; gap: 8px; margin-bottom: 16px;">
+                <input type="text" id="quick-grocery-input" class="form-control" placeholder="Quick add grocery item..." style="flex: 1;" required />
+                <button type="submit" class="btn btn-primary btn-sm">+ Add</button>
+              </form>
+
+              <div id="grocery-checklist-container" class="grocery-checklist">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- =========================================
+             VIEW 5: MAINTENANCE & APPLIANCES
+        ========================================= -->
+        <section id="tab-view-maintenance" class="tab-view">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Appliance Log & Preventative Maintenance</h3>
+                <div class="card-subtitle">Keep HVAC, plumbing, safety alarms, and major home systems in peak condition</div>
+              </div>
+              <button class="btn btn-primary" onclick="window.openAddMaintenanceModal()" id="btn-add-maint-tab">
+                + Log Appliance / Task
+              </button>
+            </div>
+
+            <div id="maintenance-grid-container" class="maintenance-grid">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- =========================================
+             VIEW 6: HOUSEHOLD DIRECTORY & NOTICEBOARD
+        ========================================= -->
+        <section id="tab-view-household" class="tab-view">
+          <div class="household-layout" style="margin-bottom: 24px;">
+            <!-- Residents List -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Household Residents</h3>
+                  <div class="card-subtitle">Current housemates, roles, and chore contribution stats</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.openAddMemberModal()">+ Add Member</button>
+              </div>
+              <div id="household-members-list" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Emergency Service Contacts -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Emergency & Service Directory</h3>
+                  <div class="card-subtitle">Direct hotline to 24/7 plumber, electrician, and property manager</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.openAddContactModal()">+ Add Contact</button>
+              </div>
+              <div id="emergency-contacts-grid" class="emergency-grid">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Digital Corkboard / Sticky Notes -->
+          <div class="card" style="background: radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.4), var(--bg-card));">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">📌 Household Noticeboard</h3>
+                <div class="card-subtitle">Collaborative digital corkboard for house announcements, reminders, and notes</div>
+              </div>
+              <button class="btn btn-primary" onclick="window.openAddNoteModal()">+ Pin New Note</button>
+            </div>
+            <div id="noticeboard-grid" class="noticeboard-container">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- =========================================
+             VIEW 7: BACKUP & DATA SETTINGS
+        ========================================= -->
+        <section id="tab-view-settings" class="tab-view">
+          <div class="card" style="max-width: 680px; margin: 0 auto;">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Data Storage & Privacy</h3>
+                <div class="card-subtitle">Complete client-side ownership. Your household data is kept securely in browser LocalStorage.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <!-- Export Card -->
+              <div style="padding: 16px; background: var(--bg-tertiary); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <h4 style="font-size: 1rem; margin-bottom: 6px;">📥 Export Household Backup (JSON)</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+                  Download a complete backup containing all members, chores, bills, inventory, appliances, and noticeboard notes as a single file.
+                </p>
+                <button class="btn btn-primary btn-sm" onclick="window.handleExportData()">Export Data File</button>
+              </div>
+
+              <!-- Import Card -->
+              <div style="padding: 16px; background: var(--bg-tertiary); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <h4 style="font-size: 1rem; margin-bottom: 6px;">📤 Restore from Backup File</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+                  Restore your household workspace by importing a previously saved HavenHub JSON backup.
+                </p>
+                <input type="file" id="import-json-file" accept=".json" style="display: none;" onchange="window.handleImportData(event)" />
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-json-file').click()">Select JSON File to Restore</button>
+              </div>
+
+              <!-- Reset to Factory Seed -->
+              <div style="padding: 16px; background: rgba(239, 68, 68, 0.05); border-radius: var(--radius-md); border: 1px solid var(--danger-border);">
+                <h4 style="font-size: 1rem; color: var(--danger); margin-bottom: 6px;">⚠️ Factory Reset to Sample Data</h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px;">
+                  Clear all changes and reset the app back to the initial sample dataset (useful for testing or starting fresh).
+                </p>
+                <button class="btn btn-danger btn-sm" onclick="window.handleResetDefault()">Reset Everything to Demo State</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Universal Modal Overlay -->
+  <div id="app-modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div id="app-modal-container" class="modal-card">
+      <!-- Injected dynamically by modal helpers -->
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/modules/dashboard.js"></script>
+  <script src="js/modules/chores.js"></script>
+  <script src="js/modules/expenses.js"></script>
+  <script src="js/modules/pantry.js"></script>
+  <script src="js/modules/maintenance.js"></script>
+  <script src="js/modules/household.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
