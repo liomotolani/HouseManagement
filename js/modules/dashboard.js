@@ -4,11 +4,22 @@
 
 function renderDashboard() {
   const store = window.havenStorage;
+  const user = window.havenAuth?.getCurrentUser();
   const chores = store.getChores();
   const expenses = store.getExpenses();
   const pantry = store.getPantry();
   const maintenance = store.getMaintenance();
   const activities = store.data.activities || [];
+
+  // Update Welcome Banner
+  if (user) {
+    const greetingTitle = document.getElementById('dash-greeting-title');
+    const greetingSub = document.getElementById('dash-greeting-sub');
+    const greetingRole = document.getElementById('dash-greeting-role');
+    if (greetingTitle) greetingTitle.textContent = `Welcome back, ${user.name.split(' ')[0]}! 👋`;
+    if (greetingSub) greetingSub.textContent = `${user.householdName || 'Household'} dashboard overview • Everything looks clean and organized.`;
+    if (greetingRole) greetingRole.textContent = `👑 ${user.role || 'Primary Resident'}`;
+  }
 
   // 1. Calculate Stats
   const todayStr = new Date().toISOString().split('T')[0];

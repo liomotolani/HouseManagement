@@ -86,8 +86,19 @@ function renderHousehold() {
     }
   }
 
-  // 4. Update Sidebar Avatars Stack
+  // 4. Update Sidebar Avatars Stack & Household Info
   updateSidebarAvatars(members);
+  const houseSummary = document.getElementById('sidebar-household-summary');
+  if (houseSummary) {
+    const houseName = store.data.household?.name || 'Household';
+    const textCol = houseSummary.querySelector('div:first-child');
+    if (textCol) {
+      textCol.innerHTML = `
+        <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">${escapeHtml(houseName)}</div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">${members.length} Active Resident${members.length === 1 ? '' : 's'}</div>
+      `;
+    }
+  }
 }
 
 function updateSidebarAvatars(members) {
@@ -246,7 +257,13 @@ window.handleContactSubmit = function(e) {
 window.openAddNoteModal = function() {
   const store = window.havenStorage;
   const members = store.getMembers();
-  const memberOptions = members.map(m => `<option value="${escapeHtml(m.name.split(' ')[0])}">${escapeHtml(m.name)}</option>`).join('');
+  const currentUser = window.havenAuth?.getCurrentUser();
+  const currentFirst = currentUser ? currentUser.name.split(' ')[0] : '';
+  const memberOptions = members.map(m => {
+    const first = m.name.split(' ')[0];
+    const isSelected = currentFirst && (first.toLowerCase() === currentFirst.toLowerCase() || m.name.toLowerCase() === currentUser.name.toLowerCase());
+    return `<option value="${escapeHtml(first)}" ${isSelected ? 'selected' : ''}>${escapeHtml(m.name)}</option>`;
+  }).join('');
 
   const modalHtml = `
     <div class="modal-header">

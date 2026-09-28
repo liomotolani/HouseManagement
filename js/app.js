@@ -1,5 +1,6 @@
 /**
  * HavenHub Main Application Controller & Router
+ * Orchestrates multi-user authentication, data isolation, routing, and UI state.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,11 +9,260 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeaderDate();
   initAudio();
   initSearch();
-
-  // Initial render of default view (Dashboard)
-  renderDashboard();
-  renderHousehold(); // to populate sidebar avatars
+  initAuth();
 });
+
+/* =========================================
+   AUTHENTICATION & USER PROFILE ORCHESTRATION
+========================================= */
+function initAuth() {
+  initAvatarColorSwatches();
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    const userMenu = document.getElementById('header-user-menu');
+    if (userMenu && !userMenu.contains(e.target)) {
+      userMenu.classList.remove('open');
+    }
+  });
+
+  const currentUser = window.havenAuth.getCurrentUser();
+  if (currentUser) {
+    initLoggedInUser(currentUser);
+  } else {
+    // Show auth screen, hide app
+    showAuthScreen();
+  }
+}
+
+function showAuthScreen() {
+  const authScreen = document.getElementById('auth-screen');
+  const appContainer = document.getElementById('app-container');
+  if (authScreen) authScreen.style.display = 'flex';
+  if (appContainer) appContainer.style.display = 'none';
+}
+
+function initLoggedInUser(user) {
+  // 1. Configure scoped storage
+  window.havenStorage.setUser(user.id, user);
+
+  // 2. Hide auth screen, show main workspace
+  const authScreen = document.getElementById('auth-screen');
+  const appContainer = document.getElementById('app-container');
+  if (authScreen) authScreen.style.display = 'none';
+  if (appContainer) appContainer.style.display = 'flex';
+
+  // 3. Update User Header Profile & Dropdown
+  updateUserProfileUI(user);
+
+  // 4. Render initial view
+  renderDashboard();
+  renderHousehold();
+}
+
+function updateUserProfileUI(user) {
+  // Header Profile Pill
+  const headerAvatar = document.getElementById('header-user-avatar');
+  const headerName = document.getElementById('header-user-name');
+  const headerHouse = document.getElementById('header-household-name');
+
+  if (headerAvatar) {
+    headerAvatar.textContent = user.initials;
+    headerAvatar.style.background = user.color || '#6366f1';
+  }
+  if (headerName) headerName.textContent = user.name;
+  if (headerHouse) headerHouse.textContent = user.householdName || 'Household';
+
+  // Dropdown Popover
+  const dropAvatar = document.getElementById('dropdown-user-avatar');
+  const dropName = document.getElementById('dropdown-user-name');
+  const dropEmail = document.getElementById('dropdown-user-email');
+  const dropHouse = document.getElementById('dropdown-household-name');
+
+  if (dropAvatar) {
+    dropAvatar.textContent = user.initials;
+    dropAvatar.style.background = user.color || '#6366f1';
+  }
+  if (dropName) dropName.textContent = user.name;
+  if (dropEmail) dropEmail.textContent = user.email;
+  if (dropHouse) dropHouse.textContent = `🏠 ${user.householdName || 'Household'}`;
+
+  // Populate Switch Account List
+  const switchList = document.getElementById('account-switch-list');
+  if (switchList) {
+    const allUsers = window.havenAuth.getUsers();
+    switchList.innerHTML = allUsers.map(u => {
+      const isActive = u.id === user.id;
+      return `
+        <div class="account-switch-item ${isActive ? 'active' : ''}" onclick="window.switchAccount('${u.id}')">
+          <div class="account-switch-left">
+            <div class="avatar-mini" style="background: ${u.color}; width: 26px; height: 26px; font-size: 0.68rem;">${u.initials}</div>
+            <div style="min-width: 0;">
+              <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(u.name)}</div>
+              <div style="font-size: 0.68rem; color: var(--text-muted);">${escapeHtml(u.householdName)}</div>
+            </div>
+          </div>
+          <div>
+            ${isActive ? '<span class="badge badge-success" style="font-size: 0.65rem;">Active</span>' : '<span style="font-size: 0.72rem; color: var(--primary);">Switch</span>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Close open menu if open
+  const userMenu = document.getElementById('header-user-menu');
+  if (userMenu) userMenu.classList.remove('open');
+}
+
+function initAvatarColorSwatches() {
+  const swatches = document.querySelectorAll('#avatar-color-swatches .color-swatch-item');
+  const colorInput = document.getElementById('signup-color');
+  swatches.forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      swatches.forEach(s => {
+        s.classList.remove('active');
+        s.textContent = '';
+      });
+      swatch.classList.add('active');
+      swatch.textContent = '✓';
+      if (colorInput) colorInput.value = swatch.getAttribute('data-color');
+    });
+  });
+}
+
+function showAuthAlert(message, type = 'error') {
+  const alertEl = document.getElementById('auth-alert');
+  const msgEl = document.getElementById('auth-alert-message');
+  const iconEl = document.getElementById('auth-alert-icon');
+  if (!alertEl || !msgEl) return;
+
+  alertEl.className = `auth-alert show ${type}`;
+  msgEl.textContent = message;
+  if (iconEl) iconEl.textContent = type === 'success' ? '✓' : '⚠️';
+}
+
+function hideAuthAlert() {
+  const alertEl = document.getElementById('auth-alert');
+  if (alertEl) alertEl.className = 'auth-alert';
+}
+
+window.switchAuthTab = function(tab) {
+  hideAuthAlert();
+  const signinBtn = document.getElementById('tab-btn-signin');
+  const signupBtn = document.getElementById('tab-btn-signup');
+  const signinForm = document.getElementById('auth-signin-form');
+  const signupForm = document.getElementById('auth-signup-form');
+
+  if (tab === 'signin') {
+    if (signinBtn) signinBtn.classList.add('active');
+    if (signupBtn) signupBtn.classList.remove('active');
+    if (signinForm) signinForm.classList.add('active');
+    if (signupForm) signupForm.classList.remove('active');
+  } else {
+    if (signupBtn) signupBtn.classList.add('active');
+    if (signinBtn) signinBtn.classList.remove('active');
+    if (signupForm) signupForm.classList.add('active');
+    if (signinForm) signinForm.classList.remove('active');
+  }
+};
+
+window.togglePasswordVisibility = function(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+  } else {
+    input.type = 'password';
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+  }
+};
+
+window.handleSignInSubmit = function(e) {
+  e.preventDefault();
+  hideAuthAlert();
+  const email = document.getElementById('signin-email').value;
+  const password = document.getElementById('signin-password').value;
+
+  const result = window.havenAuth.login(email, password);
+  if (result.success) {
+    window.showToast(`Welcome back, ${result.user.name}! 👋`, 'success');
+    window.playHapticChime();
+    initLoggedInUser(result.user);
+  } else {
+    showAuthAlert(result.message, 'error');
+  }
+};
+
+window.handleSignUpSubmit = function(e) {
+  e.preventDefault();
+  hideAuthAlert();
+  const name = document.getElementById('signup-name').value;
+  const householdName = document.getElementById('signup-household').value;
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+  const color = document.getElementById('signup-color').value;
+
+  const result = window.havenAuth.signup({
+    name,
+    householdName,
+    email,
+    password,
+    color
+  });
+
+  if (result.success) {
+    window.showToast(`Welcome to HavenHub, ${result.user.name}! Your household is ready.`, 'success');
+    window.playHapticChime();
+    initLoggedInUser(result.user);
+  } else {
+    showAuthAlert(result.message, 'error');
+  }
+};
+
+window.quickDemoLogin = function(email, password) {
+  hideAuthAlert();
+  const result = window.havenAuth.login(email, password);
+  if (result.success) {
+    window.showToast(`Logged in as ${result.user.name} (${result.user.householdName})`, 'success');
+    window.playHapticChime();
+    initLoggedInUser(result.user);
+  } else {
+    showAuthAlert(result.message, 'error');
+  }
+};
+
+window.handleSignOut = function() {
+  window.havenAuth.logout();
+  const userMenu = document.getElementById('header-user-menu');
+  if (userMenu) userMenu.classList.remove('open');
+  showAuthScreen();
+  window.showToast("You have been signed out", "info");
+};
+
+window.switchAccount = function(userId) {
+  const result = window.havenAuth.switchUser(userId);
+  if (result.success) {
+    window.showToast(`Switched account to ${result.user.name}`, 'success');
+    window.playHapticChime();
+    initLoggedInUser(result.user);
+    window.switchTab('dashboard');
+  }
+};
+
+window.handleOpenAddAccount = function() {
+  const userMenu = document.getElementById('header-user-menu');
+  if (userMenu) userMenu.classList.remove('open');
+  showAuthScreen();
+  window.switchAuthTab('signup');
+};
+
+window.toggleUserMenu = function(e) {
+  e.stopPropagation();
+  const userMenu = document.getElementById('header-user-menu');
+  if (userMenu) userMenu.classList.toggle('open');
+};
 
 /* =========================================
    THEME MANAGER
@@ -57,13 +307,10 @@ function initRouter() {
       e.preventDefault();
       const tabId = item.getAttribute('data-tab');
       switchTab(tabId);
-
-      // Close mobile sidebar if open
       closeMobileSidebar();
     });
   });
 
-  // Mobile menu buttons
   const mobileToggle = document.getElementById('mobile-menu-btn');
   const sidebar = document.getElementById('app-sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
@@ -86,7 +333,6 @@ function closeMobileSidebar() {
 }
 
 window.switchTab = function(tabId) {
-  // Update nav links
   document.querySelectorAll('.nav-item').forEach(item => {
     if (item.getAttribute('data-tab') === tabId) {
       item.classList.add('active');
@@ -95,18 +341,15 @@ window.switchTab = function(tabId) {
     }
   });
 
-  // Hide all tab views
   document.querySelectorAll('.tab-view').forEach(view => {
     view.classList.remove('active');
   });
 
-  // Show selected tab view
   const targetView = document.getElementById(`tab-view-${tabId}`);
   if (targetView) {
     targetView.classList.add('active');
   }
 
-  // Update header title
   const headerTitle = document.getElementById('header-page-title');
   const titles = {
     'dashboard': 'Dashboard Overview',
@@ -121,7 +364,6 @@ window.switchTab = function(tabId) {
     headerTitle.textContent = titles[tabId];
   }
 
-  // Trigger module-specific renders
   if (tabId === 'dashboard') renderDashboard();
   if (tabId === 'chores') renderChores();
   if (tabId === 'expenses') renderExpenses();
@@ -161,7 +403,6 @@ window.closeModal = function() {
   document.body.style.overflow = '';
 };
 
-// Close modal on escape key or clicking outside
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') window.closeModal();
 });
@@ -196,7 +437,6 @@ window.showToast = function(message, type = 'info') {
 
   container.appendChild(toast);
 
-  // Trigger animation
   requestAnimationFrame(() => {
     toast.classList.add('show');
   });
@@ -211,9 +451,7 @@ window.showToast = function(message, type = 'info') {
    AUDIO CHIME (WEB AUDIO API SYNTHESIZER)
 ========================================= */
 let audioCtx = null;
-function initAudio() {
-  // Lazily initialized on first user gesture
-}
+function initAudio() {}
 
 window.playHapticChime = function() {
   try {
@@ -229,11 +467,10 @@ window.playHapticChime = function() {
 
     const now = audioCtx.currentTime;
     
-    // Two-tone cheerful arpeggio chime (C5 -> G5)
     const osc1 = audioCtx.createOscillator();
     const gain1 = audioCtx.createGain();
     osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(523.25, now); // C5
+    osc1.frequency.setValueAtTime(523.25, now);
     gain1.gain.setValueAtTime(0.12, now);
     gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
     osc1.connect(gain1);
@@ -244,7 +481,7 @@ window.playHapticChime = function() {
     const osc2 = audioCtx.createOscillator();
     const gain2 = audioCtx.createGain();
     osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(783.99, now + 0.1); // G5
+    osc2.frequency.setValueAtTime(783.99, now + 0.1);
     gain2.gain.setValueAtTime(0.15, now + 0.1);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
     osc2.connect(gain2);
@@ -252,7 +489,7 @@ window.playHapticChime = function() {
     osc2.start(now + 0.1);
     osc2.stop(now + 0.45);
   } catch (err) {
-    // Audio Context blocked or not supported - silently ignore
+    // Silently ignore if audio context is blocked
   }
 };
 
@@ -267,7 +504,6 @@ function initSearch() {
     const q = e.target.value.toLowerCase().trim();
     if (!q) return;
 
-    // Check if on chores tab or others
     const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab');
     if (activeTab === 'chores') {
       const cards = document.querySelectorAll('#chores-list-container .chore-card');
@@ -308,7 +544,6 @@ window.handleImportData = function(e) {
     const success = window.havenStorage.importJSON(evt.target.result);
     if (success) {
       window.showToast("Household data successfully restored!", "success");
-      // Reload active view
       const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab') || 'dashboard';
       window.switchTab(activeTab);
     } else {
@@ -319,9 +554,11 @@ window.handleImportData = function(e) {
 };
 
 window.handleResetDefault = function() {
-  if (confirm("Are you sure you want to reset all household data to factory sample state? All custom entries will be replaced.")) {
+  const user = window.havenAuth?.getCurrentUser();
+  const houseName = user?.householdName || 'this household';
+  if (confirm(`Are you sure you want to reset data for '${houseName}'? All custom entries will be replaced with fresh sample data.`)) {
     window.havenStorage.resetToDefault();
-    window.showToast("Household reset to demo sample data", "info");
+    window.showToast(`Reset ${houseName} data to starter state`, "info");
     const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab') || 'dashboard';
     window.switchTab(activeTab);
   }

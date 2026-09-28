@@ -39,3 +39,22 @@ This file is a chronological record of what was built, key decisions, what chang
 * I am still figuring out how roommates can use the app together from separate phones or laptops, since browser local storage only stays on one device.
 * I am not sure yet whether equal bill splits are flexible enough for real households, or if I will need to support custom split percentages for roommates who have different room sizes.
 * I still need to test whether auto-adding pantry items to the grocery list clutters the list when stock levels are not configured carefully.
+
+## September 28, 2026
+
+### What I worked on
+
+* Added a complete Sign Up and Sign In authentication system (`js/auth.js` and `css/auth.css`).
+* Implemented multi-user data isolation in `js/storage.js` using user-scoped storage keys (`havenhub_user_data_${userId}`).
+* Each user now has their own private dashboard, chores, expenses, pantry inventory, appliance maintenance schedule, and noticeboard.
+* Added pre-seeded demo accounts (Alex Rivera - Oakwood Haven, Maya Chen - Skyline Loft, Jordan Taylor - Pinecrest Studio) with 1-click test buttons.
+* Added a floating user profile dropdown in the top header with account switching, household status, and sign out options.
+* Added a personalized dashboard welcome banner that displays the logged-in user's name, household name, and resident role.
+
+### What I decided
+
+**Decision:** Implemented user-scoped local storage keys (`havenhub_user_data_${userId}`) rather than a single shared storage key.  
+**Why:** Guarantees strict client-side data isolation so that users cannot see or modify each other's dashboards, chores, expenses, or pantry inventory.
+
+**Decision:** Created 1-click quick-login demo accounts for Alex, Maya, and Jordan alongside full sign-up for new users.  
+**Why:** Enables instant testing of cross-user dashboard isolation without having to manually register multiple accounts each time.

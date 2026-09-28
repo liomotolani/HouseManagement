@@ -118,7 +118,11 @@ window.openAddChoreModal = function() {
   const store = window.havenStorage;
   const members = store.getMembers();
 
-  const membersOptions = members.map(m => `<option value="${m.id}">${escapeHtml(m.name)}</option>`).join('');
+  const currentUser = window.havenAuth?.getCurrentUser();
+  const membersOptions = members.map(m => {
+    const isSelected = currentUser && (m.name.toLowerCase() === currentUser.name.toLowerCase() || m.id === `m-${currentUser.id}`);
+    return `<option value="${m.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(m.name)}</option>`;
+  }).join('');
 
   const modalHtml = `
     <div class="modal-header">
