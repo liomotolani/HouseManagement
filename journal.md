@@ -58,3 +58,29 @@ This file is a chronological record of what was built, key decisions, what chang
 
 **Decision:** Created 1-click quick-login demo accounts for Alex, Maya, and Jordan alongside full sign-up for new users.  
 **Why:** Enables instant testing of cross-user dashboard isolation without having to manually register multiple accounts each time.
+
+## October 7, 2026
+
+### What I worked on
+
+* Audited every delete/remove action across the app and found the account-deletion feature was incomplete: the `promptDeleteAccount` function was called in three places (profile dropdown, Settings "Danger Zone", and the account-switcher list) but was never defined, so clicking "Delete Account" threw a `ReferenceError`.
+* Implemented `window.promptDeleteAccount(userId)` in `js/app.js` — opens a danger-confirmation modal that lists exactly what will be erased and requires typing `DELETE` before the button activates.
+* Implemented `window.handleConfirmAccountDelete(userId, wasActive)` which calls the existing `AuthManager.deleteAccount()` and `HouseholdStorage.deleteUserData()`, then signs the user out if it was the active account or refreshes the UI if it was another account.
+* Fixed two other undefined helpers: `handleRestoreDemoAccounts` (wires the "Restore Default Demo Accounts" link to `AuthManager.restoreDemoAccounts()`) and `renderAuthDemoGrid` (dynamically renders the 1-click demo login chips and toggles the restore link based on which demo accounts still exist).
+* Verified the full delete chain end to end: UI button → confirmation modal → auth deletion → storage wipe → session cleanup → re-render. Confirmed all `window.*` calls now have matching definitions and all JS files pass `node --check`.
+
+### What I decided
+
+**Decision:** Required typing `DELETE` (with a live-validated button) instead of a simple `confirm()` for account deletion.  
+**Why:** Account deletion is irreversible and wipes an entire household's data, so it deserves a stronger guard than the single-click confirm used for chores, expenses, and pantry items.
+
+**Decision:** Reused the existing `AuthManager.deleteAccount()` and `HouseholdStorage.deleteUserData()` backend rather than adding new storage logic.  
+**Why:** The data-isolation and cleanup logic was already correct; only the UI wiring was missing, so the fix stayed small and avoided duplicating deletion rules.
+
+### What I learned
+
+* A feature can look "done" in the markup (buttons present, backend methods present) yet still be broken if the bridging function is never defined. Grepping every `window.X(` call against every `window.X =` definition is a fast way to catch these gaps in a no-framework codebase.
+
+### What I'm figuring out
+
+* Whether account deletion should also offer a "keep the household data but remove me" option for shared homes, versus the current full wipe of the deleted user's scoped storage.

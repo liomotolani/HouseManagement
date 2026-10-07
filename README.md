@@ -18,19 +18,21 @@ They would use it daily to check off tasks, log shared utility bills, check groc
 
 ## The Idea
 
-The idea was to build a single home dashboard that keeps everything together without requiring user accounts, passwords, or app store downloads. 
+The idea was to build a single home dashboard that keeps everything together with optional sign-in, no app store downloads, and no external servers. 
 
-Everything runs directly in the web browser, saving data immediately on the device so housemates can start organizing right away.
+Everything runs directly in the web browser, saving data immediately on the device so housemates can start organizing right away. A first-time visitor can explore with pre-filled sample data, create their own account, or jump in with a 1-click demo persona (Alex, Maya, or Jordan) to see how isolated household dashboards work.
 
 ## How It Works
 
 The system connects the main parts of running a shared home into simple steps:
 
+0. **Signing In:** A user creates a free account (name, household name, email, password) or signs in. HavenHub keeps each household's data strictly isolated in its own browser storage slot, so one user can never see or edit another user's chores, bills, pantry, or notes.
 1. **Managing Chores:** A user checks off a chore they finished. HavenHub marks the task completed, adds to that person's streak, and plays a short chime. The rest of the house can see who completed what.
 2. **Splitting Bills:** A user logs an expense, such as the electric bill or internet payment, and chooses who paid it. HavenHub automatically divides the total evenly among housemates and updates everyone's balance so people know who owes money or is owed money.
 3. **Tracking Supplies:** A user updates how many items are left in the pantry or fridge. If an item drops to its minimum level, HavenHub automatically adds it to the shared grocery checklist.
 4. **Appliance Maintenance:** A user checks the maintenance list to see countdowns for tasks like changing the air filter. When the task is done, clicking one button resets the date and sets the next due date based on the service schedule.
 5. **Noticeboard & Contacts:** Housemates can pin colored sticky notes for announcements and access emergency numbers for plumbers or the landlord with one click.
+6. **Deleting an Account:** A user can permanently delete their account from the profile dropdown or the Settings "Danger Zone". The app asks them to type `DELETE` to confirm, then wipes the account and all of its private data (chore streaks, split bills, pantry inventory, appliance logs, and notes) and signs them out.
 
 ## Decisions I Made
 
@@ -38,16 +40,20 @@ The system connects the main parts of running a shared home into simple steps:
 **Why:** I wanted a lightweight project that loads instantly, has zero build steps, and does not depend on third-party libraries.  
 **Trade-off:** Writing all styles, modals, tabs, and data logic by hand required more initial setup than using prebuilt packages.
 
-**Decision:** Used browser local storage instead of an online database or user accounts.  
-**Why:** It keeps all household information completely private on the user's machine and lets someone use the app immediately without signing up.  
-**Trade-off:** Data stays on that specific device and browser. Housemates cannot view or update the dashboard simultaneously from their own separate phones without manually sharing backup files.
+**Decision:** Added an optional sign-up / sign-in system with user-scoped local storage keys (`havenhub_user_data_${userId}`) instead of a single shared storage key.  
+**Why:** It guarantees strict client-side data isolation so that users cannot see or modify each other's dashboards, chores, expenses, or pantry inventory, while still requiring no server or build step.  
+**Trade-off:** Isolation is per-browser, not per-device across the internet, so a household still cannot collaborate live from separate machines.
+
+**Decision:** Required typing `DELETE` (with a live-validated button) to delete an account, rather than a single confirm dialog.  
+**Why:** Account deletion is irreversible and wipes an entire household's private data, so it needs a stronger guard than the single-click confirm used for chores, expenses, and pantry items.  
+**Trade-off:** It is one extra step, but the irreversible nature of the action justifies it.
 
 **Decision:** Linked pantry stock levels directly to the grocery shopping list.  
 **Why:** When items like cooking oil or laundry detergent run out, people often forget to write them down. Automating this removes a step for the household.  
 **Trade-off:** If a user sets a minimum threshold too high, items can show up on the grocery list sooner than needed.
 
-**Decision:** Included realistic sample household data on the first visit.  
-**Why:** An empty screen makes it difficult to see how chore streaks, spending charts, and split balances work. Sample data gives immediate context.  
+**Decision:** Included realistic sample household data on the first visit, plus 1-click demo personas (Alex, Maya, Jordan) that can be restored if deleted.  
+**Why:** An empty screen makes it difficult to see how chore streaks, spending charts, and split balances work. Sample data gives immediate context, and the restore link lets testers bring the demo accounts back.  
 **Trade-off:** A user has to remove or replace sample entries when they want to start fresh with their own home data.
 
 ## What I Learned
@@ -70,6 +76,7 @@ Browser standards today have enough built-in capability—such as CSS grid, CSS 
 
 ## Final Notes
 
-* **Status:** Working local prototype.
-* **Technology:** HTML5, CSS3, Vanilla JavaScript (zero external dependencies).
-* **Storage:** Browser `localStorage` with JSON export and import for backups.
+* **Status:** Working local prototype with multi-user sign-in and full per-account delete.
+* **Technology:** HTML5, CSS3, Vanilla JavaScript (zero external dependencies; Google Fonts only for typography).
+* **Storage:** Browser `localStorage` with per-user scoped keys, JSON export/import for backups, and a factory reset to sample data.
+* **Delete coverage:** Chores, expenses, pantry items, grocery items, appliances, residents, emergency contacts, noticeboard notes, and entire accounts can all be removed; account deletion requires typing `DELETE` to confirm.

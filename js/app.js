@@ -35,11 +35,46 @@ function initAuth() {
   }
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function showAuthScreen() {
   const authScreen = document.getElementById('auth-screen');
   const appContainer = document.getElementById('app-container');
   if (authScreen) authScreen.style.display = 'flex';
   if (appContainer) appContainer.style.display = 'none';
+
+  renderAuthDemoGrid();
+}
+
+function renderAuthDemoGrid() {
+  const grid = document.getElementById('auth-demo-grid');
+  const restoreWrapper = document.getElementById('auth-restore-demo-wrapper');
+  if (!grid) return;
+
+  const demoUsers = window.havenAuth ? window.havenAuth.getUsers() : [];
+  const demoIds = ['user-alex', 'user-maya', 'user-jordan'];
+  const presentDemos = demoUsers.filter(u => demoIds.includes(u.id));
+
+  grid.innerHTML = presentDemos.map(u => `
+    <button type="button" class="demo-account-chip" onclick="window.quickDemoLogin('${escapeHtml(u.email)}', 'password123')" title="Log in as ${escapeHtml(u.name)}">
+      <div class="demo-avatar-bubble" style="background: ${u.color};">${escapeHtml(u.initials)}</div>
+      <span class="demo-chip-name">${escapeHtml(u.name)}</span>
+      <span class="demo-chip-house">${escapeHtml(u.householdName)}</span>
+    </button>
+  `).join('');
+
+  const missingCount = demoIds.length - presentDemos.length;
+  if (restoreWrapper) {
+    restoreWrapper.style.display = missingCount > 0 ? 'block' : 'none';
+  }
 }
 
 function initLoggedInUser(user) {
@@ -87,6 +122,12 @@ function updateUserProfileUI(user) {
   if (dropEmail) dropEmail.textContent = user.email;
   if (dropHouse) dropHouse.textContent = `🏠 ${user.householdName || 'Household'}`;
 
+  // Update Settings View Danger Zone Labels if present
+  const settingsAccName = document.getElementById('settings-delete-account-name');
+  const settingsHouseName = document.getElementById('settings-delete-household-name');
+  if (settingsAccName) settingsAccName.textContent = user.name;
+  if (settingsHouseName) settingsHouseName.textContent = user.householdName || 'Household';
+
   // Populate Switch Account List
   const switchList = document.getElementById('account-switch-list');
   if (switchList) {
@@ -94,16 +135,21 @@ function updateUserProfileUI(user) {
     switchList.innerHTML = allUsers.map(u => {
       const isActive = u.id === user.id;
       return `
-        <div class="account-switch-item ${isActive ? 'active' : ''}" onclick="window.switchAccount('${u.id}')">
-          <div class="account-switch-left">
+        <div class="account-switch-item ${isActive ? 'active' : ''}">
+          <div class="account-switch-left" onclick="window.switchAccount('${u.id}')" style="cursor: pointer; flex: 1; min-width: 0;">
             <div class="avatar-mini" style="background: ${u.color}; width: 26px; height: 26px; font-size: 0.68rem;">${u.initials}</div>
-            <div style="min-width: 0;">
-              <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">${escapeHtml(u.name)}</div>
-              <div style="font-size: 0.68rem; color: var(--text-muted);">${escapeHtml(u.householdName)}</div>
+            <div style="min-width: 0; overflow: hidden; text-overflow: ellipsis;">
+              <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(u.name)}</div>
+              <div style="font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(u.householdName)}</div>
             </div>
           </div>
-          <div>
-            ${isActive ? '<span class="badge badge-success" style="font-size: 0.65rem;">Active</span>' : '<span style="font-size: 0.72rem; color: var(--primary);">Switch</span>'}
+          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            ${isActive ? '<span class="badge badge-success" style="font-size: 0.65rem;">Active</span>' : `
+              <span style="font-size: 0.72rem; color: var(--primary); cursor: pointer; padding: 2px 4px;" onclick="window.switchAccount('${u.id}')">Switch</span>
+              <button class="account-delete-quick-btn" onclick="event.stopPropagation(); window.promptDeleteAccount('${u.id}')" title="Delete account ${escapeHtml(u.name)}">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            `}
           </div>
         </div>
       `;
@@ -562,4 +608,105 @@ window.handleResetDefault = function() {
     const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab') || 'dashboard';
     window.switchTab(activeTab);
   }
+};
+
+/* =========================================
+   ACCOUNT DELETION & DEMO RESTORE
+   ========================================= */
+window.promptDeleteAccount = function(userId = null) {
+  const currentUser = window.havenAuth.getCurrentUser();
+  const targetId = userId || (currentUser ? currentUser.id : null);
+  if (!targetId) {
+    window.showToast("No account selected for deletion.", "warning");
+    return;
+  }
+
+  const targetUser = window.havenAuth.getUserById(targetId);
+  if (!targetUser) {
+    window.showToast("Account not found. It may have already been deleted.", "warning");
+    updateUserProfileUI(currentUser);
+    return;
+  }
+
+  const isActive = targetId === (currentUser ? currentUser.id : null);
+  const remaining = window.havenAuth.getUsers().length;
+
+  const modalHtml = `
+    <div class="modal-header">
+      <h3 class="modal-title" style="color: var(--danger);">🗑️ Delete Account</h3>
+      <button class="icon-btn" onclick="window.closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="padding: 14px; background: rgba(239, 68, 68, 0.08); border: 1px solid var(--danger-border); border-radius: var(--radius-md); margin-bottom: 16px;">
+        <p style="margin: 0 0 6px; font-weight: 600; color: var(--danger);">You are about to permanently delete:</p>
+        <p style="margin: 0; font-size: 0.9rem;"><strong>${escapeHtml(targetUser.name)}</strong> (${escapeHtml(targetUser.email)})</p>
+        <p style="margin: 4px 0 0; font-size: 0.8rem; color: var(--text-secondary);">🏠 ${escapeHtml(targetUser.householdName)}</p>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+        This will erase the account and <strong>all private data</strong> for this household: chore streaks, split bills, pantry inventory, appliance logs, and noticeboard notes. This action <strong>cannot be reversed</strong>.
+      </p>
+      ${isActive ? `<p style="font-size: 0.8rem; color: var(--warning);">⚠️ This is your currently signed-in account. You will be signed out after deletion.</p>` : ''}
+      <div class="form-group" style="margin-top: 16px;">
+        <label class="form-label" for="delete-account-confirm">Type <strong>DELETE</strong> to confirm</label>
+        <input type="text" id="delete-account-confirm" class="form-control" placeholder="Type DELETE" autocomplete="off" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="window.closeModal()">Cancel</button>
+      <button type="button" class="btn btn-danger" id="btn-confirm-account-delete" onclick="window.handleConfirmAccountDelete('${targetId}', ${isActive})">
+        Permanently Delete
+      </button>
+    </div>
+  `;
+
+  window.openModal(modalHtml);
+
+  const confirmInput = document.getElementById('delete-account-confirm');
+  const confirmBtn = document.getElementById('btn-confirm-account-delete');
+  if (confirmInput && confirmBtn) {
+    confirmInput.focus();
+    confirmInput.addEventListener('input', () => {
+      confirmBtn.disabled = confirmInput.value.trim().toUpperCase() !== 'DELETE';
+    });
+    confirmBtn.disabled = true;
+  }
+};
+
+window.handleConfirmAccountDelete = function(userId, wasActive) {
+  const confirmInput = document.getElementById('delete-account-confirm');
+  const verification = confirmInput ? confirmInput.value : '';
+
+  const result = window.havenAuth.deleteAccount(userId, verification);
+  if (!result.success) {
+    window.showToast(result.message || "Deletion failed.", "error");
+    return;
+  }
+
+  window.closeModal();
+  window.showToast(`Account "${result.deletedUser.name}" and all its data has been deleted.`, "success");
+
+  if (wasActive) {
+    showAuthScreen();
+  } else {
+    const stillHere = window.havenAuth.getCurrentUser();
+    if (stillHere) {
+      updateUserProfileUI(stillHere);
+      renderHousehold();
+      renderDashboard();
+    } else {
+      showAuthScreen();
+    }
+  }
+};
+
+window.handleRestoreDemoAccounts = function() {
+  const result = window.havenAuth.restoreDemoAccounts();
+  if (result.success && result.count > 0) {
+    window.showToast(`Restored ${result.count} demo account${result.count === 1 ? '' : 's'} (Alex, Maya, Jordan)`, "success");
+  } else {
+    window.showToast("Demo accounts are already present.", "info");
+  }
+  renderAuthDemoGrid();
+  const currentUser = window.havenAuth.getCurrentUser();
+  if (currentUser) updateUserProfileUI(currentUser);
 };

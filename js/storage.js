@@ -716,6 +716,26 @@ class HouseholdStorage {
     return JSON.parse(JSON.stringify(seed));
   }
 
+  deleteUserData(userId) {
+    if (!userId) return false;
+    try {
+      const key = this.computeStorageKey(userId);
+      localStorage.removeItem(key);
+      if (userId === 'user-alex') {
+        localStorage.removeItem('havenhub_household_data_v1');
+      }
+      if (this.userId === userId) {
+        this.data = null;
+        this.userId = null;
+        this.userProfile = null;
+      }
+      return true;
+    } catch (err) {
+      console.error("Failed to delete user data for", userId, err);
+      return false;
+    }
+  }
+
   exportJSON() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data, null, 2));
     const downloadAnchor = document.createElement('a');

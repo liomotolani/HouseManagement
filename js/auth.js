@@ -52,7 +52,7 @@ class AuthManager {
   loadUsers() {
     try {
       const raw = localStorage.getItem(AUTH_USERS_KEY);
-      if (!raw) {
+      if (raw === null) {
         this.saveUsers(DEFAULT_USERS);
         return JSON.parse(JSON.stringify(DEFAULT_USERS));
       }
@@ -187,6 +187,64 @@ class AuthManager {
       return { success: true, user };
     }
     return { success: false, message: "User not found" };
+  }
+
+  deleteAccount(userId, verificationInput = null) {
+    const user = this.getUserById(userId);
+    if (!user) {
+      return { success: false, message: "User account not found." };
+    }
+
+    if (verificationInput !== null && verificationInput !== undefined) {
+      const cleanInput = verificationInput.trim();
+      const isPasswordMatch = cleanInput === user.password;
+      const isKeywordMatch = cleanInput.toUpperCase() === 'DELETE';
+      if (!isPasswordMatch && !isKeywordMatch) {
+        return {
+          success: false,
+          message: "Confirmation failed. Please enter your account password or type DELETE."
+        };
+      }
+    }
+
+    const wasActive = this.currentUserId === userId;
+
+    // 1. Remove user from users array
+    this.users = this.users.filter(u => u.id !== userId);
+    this.saveUsers();
+
+    // 2. Erase user-scoped household data from storage
+    if (window.havenStorage && typeof window.havenStorage.deleteUserData === 'function') {
+      window.havenStorage.deleteUserData(userId);
+    }
+
+    // 3. Clear active session if this was the logged-in user
+    if (wasActive) {
+      this.saveSession(null);
+    }
+
+    return {
+      success: true,
+      deletedUser: user,
+      wasActive,
+      remainingUsersCount: this.users.length
+    };
+  }
+
+  restoreDemoAccounts() {
+    let addedCount = 0;
+    DEFAULT_USERS.forEach(defUser => {
+      const exists = this.users.some(u => u.id === defUser.id || u.email.toLowerCase() === defUser.email.toLowerCase());
+      if (!exists) {
+        this.users.push(JSON.parse(JSON.stringify(defUser)));
+        addedCount++;
+      }
+    });
+
+    if (addedCount > 0) {
+      this.saveUsers();
+    }
+    return { success: true, count: addedCount };
   }
 }
 
